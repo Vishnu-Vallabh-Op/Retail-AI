@@ -473,6 +473,13 @@
   <!-- ─── Toast ────────────────────────────────────────────────────────────── -->
   <div class="toast" id="toast"></div>
 
+  <script>
+    // Auto-detect API base: localhost in dev, same origin in production
+    window.CHAT_API_ENDPOINT =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3001/chat'
+        : window.location.origin + '/chat';
+  </script>
   <script src="script.js"></script>
   <script src="chat.js"></script>
 </body>
