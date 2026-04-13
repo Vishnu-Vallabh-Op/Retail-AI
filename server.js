@@ -9,6 +9,9 @@ dotenv.config();
 const app  = express();
 const port = process.env.PORT || 3001;
 
+// ─── Trust Render/proxy X-Forwarded-For headers ───────────────────────────────
+app.set('trust proxy', 1);
+
 // ─── Security headers (XSS, clickjacking, MIME sniffing, etc.) ───────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 
