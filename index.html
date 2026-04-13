@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retail AI &mdash; Decision Intelligence</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ─── Header ──────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">&#x1F4CA;</div>
+          <div class="logo-text">Retail <span>AI</span></div>
+          <div class="logo-tag">Decision Intelligence</div>
+        </div>
+        <div class="header-right">
+          <div class="status-badge">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ─── Pipeline ────────────────────────────────────────────────────── -->
+    <section class="pipeline" id="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p1">&#x1F4C1;</div>
+        <div class="pipe-label">Upload</div>
+        <div class="pipe-status" id="ps1"></div>
+      </div>
+      <div class="pipe-line" id="l1"></div>
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p2">&#x1F504;</div>
+        <div class="pipe-label">Process</div>
+        <div class="pipe-status" id="ps2"></div>
+      </div>
+      <div class="pipe-line" id="l2"></div>
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p3">&#x1F916;</div>
+        <div class="pipe-label">Retail AI</div>
+        <div class="pipe-status" id="ps3"></div>
+      </div>
+      <div class="pipe-line" id="l3"></div>
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p4">&#x26A0;&#xFE0F;</div>
+        <div class="pipe-label">Risk AI</div>
+        <div class="pipe-status" id="ps4"></div>
+      </div>
+      <div class="pipe-line" id="l4"></div>
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p5">&#x1F4CB;</div>
+        <div class="pipe-label">Report AI</div>
+        <div class="pipe-status" id="ps5"></div>
+      </div>
+      <div class="pipe-line" id="l5"></div>
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p6">&#x1F4BE;</div>
+        <div class="pipe-label">Supabase</div>
+        <div class="pipe-status" id="ps6"></div>
+      </div>
+      <div class="pipe-line" id="l6"></div>
+      <div class="pipe-step">
+        <div class="pipe-dot" id="p7">&#x2705;</div>
+        <div class="pipe-label">Done</div>
+        <div class="pipe-status" id="ps7"></div>
+      </div>
+    </section>
+
+    <!-- ─── Upload ──────────────────────────────────────────────────────── -->
+    <section class="upload-section">
+      <div class="upload-area" id="uploadArea">
+        <span class="upload-icon">&#x1F4C2;</span>
+        <div class="upload-title">Drop your retail data file here</div>
+        <div class="upload-sub">Supports Excel (.xlsx, .xls) and CSV files &nbsp;&middot;&nbsp; <span style="color:var(--amber);font-size:11px;">&#x26A0; Data clears on page refresh — re-upload to restore</span></div>
+        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+          Choose File
+        </button>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <div class="file-info-left">
+          <span class="file-icon">&#x1F4C4;</span>
+          <div class="file-details">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-stats" id="fileStats"></div>
+          </div>
+        </div>
+        <div class="file-actions">
+          <button class="btn btn-success" id="analyzeBtn" onclick="startAnalysis()">&#x1F680; Analyze</button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─── Stats Row ────────────────────────────────────────────────────── -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card total">
+        <div class="stat-label">Total Reports</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub">All time analyses</div>
+      </div>
+      <div class="stat-card high">
+        <div class="stat-label">High Risk</div>
+        <div class="stat-value" id="statHigh">0</div>
+        <div class="stat-sub">Needs attention</div>
+      </div>
+      <div class="stat-card med">
+        <div class="stat-label">Medium Risk</div>
+        <div class="stat-value" id="statMed">0</div>
+        <div class="stat-sub">Monitor closely</div>
+      </div>
+      <div class="stat-card low">
+        <div class="stat-label">Low Risk</div>
+        <div class="stat-value" id="statLow">0</div>
+        <div class="stat-sub">Performing well</div>
+      </div>
+    </div>
+
+    <!-- ─── Charts Grid ──────────────────────────────────────────────────── -->
+    <div class="charts-grid" id="chartsGrid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">&#x1F4C8; Revenue by Category</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">&#x1F4C5; Monthly Revenue Trend</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Data Grid ────────────────────────────────────────────────────── -->
+    <div class="data-grid" id="dataGrid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">&#x1F4CA; Data Preview</div>
+          <span class="row-count" id="rowCount"></span>
+        </div>
+        <div class="card-body card-body--flush">
+          <div class="table-wrap preview-scroll-wrap">
+            <table id="previewTable"></table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">&#x1F4D0; Key Metrics</div>
+        </div>
+        <div class="card-body">
+          <div id="metricsContent">
+            <div class="empty-state">
+              <span class="empty-icon">&#x1F4CA;</span>
+              <div class="empty-text">Upload data to see metrics</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Analysis Section ─────────────────────────────────────────────── -->
+    <section class="analysis-section" id="analysisSection">
+
+      <nav class="tabs-nav">
+        <button class="tab active" onclick="switchTab('retail')">&#x1F6D2; Retail Analysis</button>
+        <button class="tab" onclick="switchTab('risk')">&#x26A0;&#xFE0F; Risk Analysis</button>
+        <button class="tab" onclick="switchTab('report')">&#x1F4CB; Executive Report</button>
+        <button class="tab" onclick="switchTab('chat')">&#x1F4AC; AI Chat</button>
+        <button class="tab" onclick="switchTab('compare')">&#x1F4CA; Compare</button>
+        <button class="tab" onclick="switchTab('history')">&#x1F552; History</button>
+      </nav>
+
+      <!-- Retail Tab -->
+      <div class="tab-pane active" id="tab-retail">
+        <div class="analysis-grid">
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-purple">&#x1F4C8;</div>
+              <div class="analysis-title">Trend Analysis</div>
+            </div>
+            <div class="analysis-body" id="trendAnalysis">
+              <div class="empty-state"><span class="empty-icon">&#x1F916;</span><div class="empty-text">Run analysis to see results</div></div>
+            </div>
+          </div>
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-teal">&#x1F3EA;</div>
+              <div class="analysis-title">Category Insights</div>
+            </div>
+            <div class="analysis-body" id="categoryInsights">
+              <div class="empty-state"><span class="empty-icon">&#x1F916;</span><div class="empty-text">Run analysis to see results</div></div>
+            </div>
+          </div>
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-amber">&#x1F4C5;</div>
+              <div class="analysis-title">Monthly Patterns</div>
+            </div>
+            <div class="analysis-body" id="monthlyPatterns">
+              <div class="empty-state"><span class="empty-icon">&#x1F916;</span><div class="empty-text">Run analysis to see results</div></div>
+            </div>
+          </div>
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-red">&#x1F3AF;</div>
+              <div class="analysis-title">Recommendations</div>
+            </div>
+            <div class="analysis-body" id="recommendations">
+              <div class="empty-state"><span class="empty-icon">&#x1F916;</span><div class="empty-text">Run analysis to see results</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Tab -->
+      <div class="tab-pane" id="tab-risk">
+        <div class="analysis-grid">
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-red">&#x1F6A8;</div>
+              <div class="analysis-title">Risk Summary</div>
+              <div class="risk-badge-slot" id="riskLevelBadge"></div>
+            </div>
+            <div class="analysis-body" id="riskSummary">
+              <div class="empty-state"><span class="empty-icon">&#x26A0;&#xFE0F;</span><div class="empty-text">Run analysis to see risk data</div></div>
+            </div>
+          </div>
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-teal">&#x1F6E1;&#xFE0F;</div>
+              <div class="analysis-title">Mitigation Plan</div>
+            </div>
+            <div class="analysis-body" id="mitigationPlan">
+              <div class="empty-state"><span class="empty-icon">&#x1F6E1;&#xFE0F;</span><div class="empty-text">Run analysis to see mitigation plan</div></div>
+            </div>
+          </div>
+          <div class="analysis-card">
+            <div class="analysis-header">
+              <div class="analysis-icon icon-red">&#x1F4E1;</div>
+              <div class="analysis-title">Risk Signals</div>
+            </div>
+            <div class="analysis-body" id="riskSignals">
+              <div class="empty-state"><span class="empty-icon">&#x1F4E1;</span><div class="empty-text">Run analysis to see risk signals</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Tab -->
+      <div class="tab-pane" id="tab-report">
+        <div class="analysis-card">
+          <div class="analysis-header">
+            <div class="analysis-icon icon-purple">&#x1F4CB;</div>
+            <div class="analysis-title">Executive Report</div>
+            <button class="btn btn-pdf" id="downloadPdfBtn" onclick="downloadReportPDF()" style="display:none;" title="Download as PDF">
+              &#x1F4E5; Download PDF
+            </button>
+          </div>
+          <div class="analysis-body analysis-body--report" id="executiveReport">
+            <div class="empty-state"><span class="empty-icon">&#x1F4CB;</span><div class="empty-text">Run analysis to generate executive report</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Tab -->
+      <div class="tab-pane" id="tab-chat">
+        <div class="chat-layout">
+
+          <!-- ── Left Sidebar ─────────────────────────────────────────── -->
+          <aside class="chat-sidebar" id="chatSidebar">
+            <div class="chat-sidebar-top">
+              <span class="chat-sidebar-brand">&#x1F4AC; Conversations</span>
+              <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="window.chatManager.toggleSidebar()" title="Collapse sidebar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+            </div>
+            <button class="sidebar-new-chat-btn" onclick="window.chatManager.newChat()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Chat
+            </button>
+            <div class="chat-sidebar-list" id="chatSidebarList">
+              <!-- Session items injected by chat.js -->
+            </div>
+          </aside>
+
+          <!-- ── Collapsed toggle (shows when sidebar is hidden) ──────── -->
+          <button class="sidebar-expand-btn" id="sidebarExpandBtn" onclick="window.chatManager.toggleSidebar()" title="Show conversations" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- ── Main Chat Area ────────────────────────────────────────── -->
+          <div class="chat-main">
+            <div class="card chat-card-full">
+              <div class="card-header chat-card-header">
+                <div class="chat-card-title-row">
+                  <div class="analysis-icon icon-purple">&#x1F4AC;</div>
+                  <div class="chat-card-info">
+                    <div class="chat-card-title" id="chatSessionTitle">AI Chat Assistant</div>
+                    <div class="chat-card-subtitle">Ask questions about retail trends, risks, and recommendations.</div>
+                  </div>
+                  <div class="chat-card-actions">
+                    <select id="aiProviderSelect" class="provider-select" title="Switch AI provider">
+                      <option value="groq">⚡ Groq (LLaMA)</option>
+                      <option value="gemini">✨ Google Gemini</option>
+                      <option value="mistral">🌀 Mistral</option>
+                      <option value="cohere">🔷 Cohere</option>
+                    </select>
+                    <button class="btn btn-outline btn-sm" onclick="window.chatManager.clearChat()">&#x1F5D1;&#xFE0F; Clear</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body card-body--chat">
+                <div class="chat-container">
+                  <div class="chat-messages" id="chatMessages">
+                    <div class="chat-welcome">
+                      <div class="chat-welcome-icon">&#x1F916;</div>
+                      <div class="chat-welcome-title">Retail AI Assistant</div>
+                      <div class="chat-welcome-sub">Ask me about trends, risk, revenue, or any retail insight from your data.</div>
+                    </div>
+                  </div>
+                  <div class="chat-input-container">
+                    <input
+                      type="text"
+                      class="chat-input"
+                      id="chatInput"
+                      placeholder="Ask a question about your retail data..."
+                      autocomplete="off"
+                    />
+                    <button class="chat-send-btn" id="chatSendBtn" onclick="window.chatManager.sendMessage()" aria-label="Send">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Compare Tab -->
+      <div class="tab-pane" id="tab-compare">
+        <div class="compare-grid">
+
+          <!-- File A -->
+          <div class="compare-slot" id="slotA">
+            <div class="compare-upload-zone" id="compareZoneA" onclick="document.getElementById('compareFileA').click()">
+              <span class="compare-upload-icon">&#x1F4C2;</span>
+              <div class="compare-upload-title">File A</div>
+              <div class="compare-upload-sub">Current period — drop or click to upload</div>
+              <input type="file" id="compareFileA" accept=".xlsx,.xls,.csv" onchange="handleCompareFile('A', this.files[0])" />
+            </div>
+            <div class="compare-file-info" id="compareInfoA"></div>
+            <div class="compare-metrics-panel" id="compareMetricsA"></div>
+          </div>
+
+          <!-- VS divider -->
+          <div class="compare-vs">
+            <div class="compare-vs-circle">VS</div>
+          </div>
+
+          <!-- File B -->
+          <div class="compare-slot" id="slotB">
+            <div class="compare-upload-zone" id="compareZoneB" onclick="document.getElementById('compareFileB').click()">
+              <span class="compare-upload-icon">&#x1F4C2;</span>
+              <div class="compare-upload-title">File B</div>
+              <div class="compare-upload-sub">Previous period — drop or click to upload</div>
+              <input type="file" id="compareFileB" accept=".xlsx,.xls,.csv" onchange="handleCompareFile('B', this.files[0])" />
+            </div>
+            <div class="compare-file-info" id="compareInfoB"></div>
+            <div class="compare-metrics-panel" id="compareMetricsB"></div>
+          </div>
+
+        </div>
+
+        <!-- Comparison results (shown when both files loaded) -->
+        <div class="compare-results" id="compareResults">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">&#x1F4CA; Revenue by Category — Side by Side</div>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap"><canvas id="compareChart"></canvas></div>
+            </div>
+          </div>
+          <div class="card" id="compareSummaryCard">
+            <div class="card-header">
+              <div class="card-title">&#x1F50D; Key Differences</div>
+            </div>
+            <div class="card-body">
+              <div id="compareSummary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-pane" id="tab-history">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">&#x1F552; Analysis History</div>
+            <button class="btn btn-outline btn-sm" onclick="loadHistory()">&#x1F504; Refresh</button>
+          </div>
+          <div class="card-body card-body--flush">
+            <div class="table-wrap">
+              <table id="historyTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Risk Level</th>
+                    <th>Executive Report</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody">
+                  <tr>
+                    <td colspan="4" class="table-empty">Configure Supabase to load history</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ─── Executive Report Modal ───────────────────────────────────────────── -->
+  <div class="modal" id="reportModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="modal-icon">&#x1F4CB;</div>
+          <div>
+            <div class="modal-title">Executive Report</div>
+            <div class="modal-meta" id="modalMeta"></div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Toast ────────────────────────────────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>
