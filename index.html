@@ -325,6 +325,32 @@
                       <option value="mistral">🌀 Mistral</option>
                       <option value="cohere">🔷 Cohere</option>
                     </select>
+                    <script>
+                      (async () => {
+                        try {
+                          const base = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                            ? 'http://localhost:3001' : window.location.origin;
+                          const res  = await fetch(`${base}/providers`);
+                          const avail = await res.json();
+                          const sel  = document.getElementById('aiProviderSelect');
+                          const LABELS = { groq: '⚡ Groq (LLaMA)', gemini: '✨ Google Gemini', mistral: '🌀 Mistral', cohere: '🔷 Cohere' };
+                          sel.innerHTML = '';
+                          let first = null;
+                          for (const [key, enabled] of Object.entries(avail)) {
+                            if (!enabled) continue;
+                            const opt = document.createElement('option');
+                            opt.value = key;
+                            opt.textContent = LABELS[key] || key;
+                            sel.appendChild(opt);
+                            if (!first) first = key;
+                          }
+                          // Restore saved provider if still available
+                          const saved = localStorage.getItem('retailAi_provider');
+                          if (saved && avail[saved]) sel.value = saved;
+                          else if (first) sel.value = first;
+                        } catch(e) { /* keep default options if fetch fails */ }
+                      })();
+                    </script>
                     <button class="btn btn-outline btn-sm" onclick="window.chatManager.clearChat()">&#x1F5D1;&#xFE0F; Clear</button>
                   </div>
                 </div>

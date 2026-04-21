@@ -151,7 +151,7 @@ async function callAI(provider, systemPrompt, question) {
       const key = process.env.GEMINI_API_KEY;
       if (!key) throw new Error('GEMINI_API_KEY not set in .env');
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -201,7 +201,7 @@ async function callAI(provider, systemPrompt, question) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
         body: JSON.stringify({
-          model: 'command-r',
+          model: 'command-r7b-12-2024',
           messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: question }],
           max_tokens: 900, temperature: 0.15,
         }),
@@ -721,6 +721,20 @@ app.delete('/chat/session/:sessionId', async (req, res) => {
     console.error('Delete session error:', error);
     res.status(500).json({ error: 'Failed to delete session', details: error.message });
   }
+});
+
+/**
+ * GET /providers
+ * Returns which AI providers have API keys configured.
+ * Frontend uses this to show only available providers in the dropdown.
+ */
+app.get('/providers', (_req, res) => {
+  res.json({
+    groq:    !!process.env.GROQ_API_KEY,
+    gemini:  !!process.env.GEMINI_API_KEY,
+    mistral: !!process.env.MISTRAL_API_KEY,
+    cohere:  !!process.env.COHERE_API_KEY,
+  });
 });
 
 /**
